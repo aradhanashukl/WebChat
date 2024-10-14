@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Username</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 30px;
+            font-size: 3em;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            margin: 10px;
+            padding: 12px;
+            width: 300px;
+            border: 2px solid #74ebd5;
+            border-radius: 30px;
+            outline: none;
+            transition: border-color 0.3s;
+            font-size: 1.1em;
+        }
+        input:focus {
+            border-color: #acb6e5;
+        }
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            background-color: #74ebd5;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background-color: #acb6e5;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <h1>What Should We Call You?</h1>
+    <input type="text" id="username" placeholder="Enter your username" />
+    <button id="submitUsername">Continue</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('submitUsername').addEventListener('click', () => {
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                // Store username in local storage for use in the chat
+                localStorage.setItem('username', username);
+                // Redirect to the chat page
+                window.location.href = 'chat.html';
+            } else {
+                alert('Please enter a username.');
+            }
+        });
+    </script>
+</body>
+</html>

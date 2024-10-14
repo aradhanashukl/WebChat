@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set Room</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #6c7ae0, #f9f9f9);
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            margin: 10px;
+            padding: 12px;
+            width: 250px;
+            border: 2px solid #6c7ae0;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #4a54e1;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background-color: #6c7ae0;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #4a54e1;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome To ChatRoom</h1>
+    <input type="text" id="commonId" placeholder="Enter RoomID as of your friends" />
+    <button id="submitId">Continue</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('submitId').addEventListener('click', () => {
+            const commonId = document.getElementById('commonId').value.trim();
+            if (commonId) {
+                // Store common Id in local storage
+                localStorage.setItem('commonId', commonId);
+                // Redirect to choose name page
+                window.location.href = 'choose-name.html';
+            } else {
+                alert('Please enter a common Id first.');
+            }
+        });
+    </script>
+</body>
+</html>

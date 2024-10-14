@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+        }
+        #header {
+            background-color: #0052cc;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+        }
+        #messages {
+            list-style-type: none;
+            padding: 10px;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            position: relative;
+            cursor: pointer;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: #e0f7fa;
+            color: #0052cc;
+        }
+        .other-message {
+            align-self: flex-start;
+            background-color: #ffffff;
+            color: #333;
+            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        #chatContainer {
+            padding: 10px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ddd;
+        }
+        #input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        #uploadFolder {
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        .thumbnail {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        #previewContainer {
+            display: none;
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            right: 10%;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            z-index: 10;
+        }
+        #previewImage, #previewVideo {
+            max-width: 100%;
+        }
+        #cameraContainer {
+            display: none;
+            position: relative;
+            margin: 10px;
+        }
+        #cameraVideo {
+            width: 320px;
+            height: 240px;
+        }
+        #captureBtn, #recordBtn {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">Chat Application</div>
+    
+    <ul id="messages"></ul>
+    
+    
+    <div id="chatContainer">
+        <div id="inputContainer" style="flex-grow: 1; display: flex; align-items: center;">
+            <input id="input" autocomplete="off" placeholder="Type a message..." />
+            <button id="uploadFolder">📁</button>
+            <div id="cameraIcon" style="cursor: pointer; margin-left: 10px;">📸</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;" />
+    </div>
+
+    <div id="previewContainer">
+        <img id="previewImage" style="display: none;" />
+        <video id="previewVideo" style="display: none;" controls></video>
+        <div>
+            <button id="sendBtn">Send</button>
+            <button id="discardBtn">Discard</button>
+        </div>
+    </div>
+
+    <div id="cameraContainer">
+        <video id="cameraVideo" autoplay></video>
+        <button id="captureBtn">Capture</button>
+        <button id="recordBtn">Start Recording</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const previewVideo = document.getElementById('previewVideo');
+        const uploadFolder = document.getElementById('uploadFolder');
+        const fileInput = document.getElementById('fileInput');
+        const cameraIcon = document.getElementById('cameraIcon');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const captureBtn = document.getElementById('captureBtn');
+        const recordBtn = document.getElementById('recordBtn');
+
+        const commonId = localStorage.getItem('commonId');
+        const username = localStorage.getItem('username');
+
+        socket.emit('join room', commonId);
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && input.value) {
+                const messageData = {
+                    text: input.value,
+                    username: username,
+                    type: 'text',
+                    roomId: commonId
+                };
+                socket.emit('chat message', messageData);
+                input.value = '';
+            }
+        });
+
+        socket.on('chat message', function(msg) {
+            if (msg.roomId === commonId) {
+                if (msg.type === 'text') {
+                    displayMessage(msg.text, msg.username === username ? 'user-message' : 'other-message', 'text', msg.username);
+                } else if (msg.type === 'image' || msg.type === 'video') {
+                    displayMedia(msg.text, msg.type, msg.username);
+                }
+            }
+        });
+
+        function displayMessage(message, type, messageType, senderUsername) {
+            const item = document.createElement('li');
+            item.className = `message ${type}`;
+            item.innerHTML = `<strong>${senderUsername === username ? 'You' : senderUsername}:</strong> ${message}`;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        function displayMedia(src, type, senderUsername) {
+            const item = document.createElement('li');
+            item.className = `message ${senderUsername === username ? 'user-message' : 'other-message'}`;
+            if (type === 'image') {
+                item.innerHTML = `<strong>${senderUsername === username ? 'You' : senderUsername}:</strong> <img class="thumbnail" src="${src}" style="max-width: 100px;" />`;
+            } else if (type === 'video') {
+                item.innerHTML = `<strong>${senderUsername === username ? 'You' : senderUsername}:</strong> <video class="thumbnail" controls style="max-width: 100px;"><source src="${src}" type="video/webm"></video>`;
+            }
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            if (previewImage.style.display === 'block') {
+                const src = previewImage.src;
+                socket.emit('chat message', { text: src, username, type: 'image', roomId: commonId });
+            } else if (previewVideo.style.display === 'block') {
+                const src = previewVideo.src;
+                socket.emit('chat message', { text: src, username, type: 'video', roomId: commonId });
+            }
+            previewContainer.style.display = 'none';
+            cameraContainer.style.display = 'none';
+            stopCamera();
+        });
+
+        document.getElementById('discardBtn').addEventListener('click', () => {
+            previewContainer.style.display = 'none';
+            cameraContainer.style.display = 'none';
+            stopCamera();
+        });
+
+        uploadFolder.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const src = reader.result;
+                    const type = file.type.startsWith('image') ? 'image' : 'video';
+                    if (type === 'image') {
+                        previewImage.src = src;
+                        previewImage.style.display = 'block';
+                        previewVideo.style.display = 'none';
+                    } else {
+                        previewVideo.src = src;
+                        previewVideo.style.display = 'block';
+                        previewImage.style.display = 'none';
+                    }
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        cameraIcon.addEventListener('click', () => {
+            if (cameraContainer.style.display === 'none') {
+                startCamera();
+            } else {
+                stopCamera();
+            }
+            cameraContainer.style.display = cameraContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        captureBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraVideo.videoWidth;
+            canvas.height = cameraVideo.videoHeight;
+            canvas.getContext('2d').drawImage(cameraVideo, 0, 0);
+            const imageDataUrl = canvas.toDataURL('image/png');
+            previewImage.src = imageDataUrl;
+            previewImage.style.display = 'block';
+            previewVideo.style.display = 'none';
+            previewContainer.style.display = 'block';
+        });
+
+        recordBtn.addEventListener('click', () => {
+            if (recordBtn.textContent === 'Start Recording') {
+                startRecording();
+                recordBtn.textContent = 'Stop Recording';
+            } else {
+                stopRecording();
+                recordBtn.textContent = 'Start Recording';
+            }
+        });
+
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        function startRecording() {
+    recordedChunks = [];
+    const options = { mimeType: 'video/webm; codecs=vp8,opus' };
+    
+    // Check if the codec is supported
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.error(`Codec not supported: ${options.mimeType}`);
+        return; // Stop if the codec is not supported
+    }
+
+    mediaRecorder = new MediaRecorder(cameraVideo.srcObject, options);
+
+    mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+        }
+    };
+
+    mediaRecorder.onstop = () => {
+        const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+        const videoUrl = URL.createObjectURL(videoBlob);
+        previewVideo.src = videoUrl;
+        previewImage.style.display = 'none';
+        previewVideo.style.display = 'block';
+        previewContainer.style.display = 'block';
+        previewVideo.play(); // Auto play the video to see if sound is present
+    };
+    mediaRecorder.start();
+}
+
+
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+        }
+
+        async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        cameraVideo.srcObject = stream;
+
+        // Check available tracks
+        console.log('Tracks:', stream.getTracks());
+        stream.getAudioTracks().forEach(track => {
+            console.log('Audio track:', track);
+        });
+    } catch (error) {
+        console.error('Error accessing the camera and microphone:', error);
+    }
+}
+
+
+        function stopCamera() {
+            const stream = cameraVideo.srcObject;
+            if (stream) {
+                stream.getTracks().forEach((track) => track.stop());
+                cameraVideo.srcObject = null;
+            }
+        }
+      
+    </script>
+</body>
+</html>

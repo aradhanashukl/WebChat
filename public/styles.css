@@ -1,0 +1,105 @@
+/* styles.css */
+
+* {
+    box-sizing: border-box; /* Ensure padding and borders are included in element's total width and height */
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #74ebd5, #acb6e5); /* Gradient background */
+    font-family: 'Arial', sans-serif;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Full height */
+    padding: 20px; /* Add some padding around the chat container */
+}
+
+.messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    border-radius: 10px; /* Rounded corners for messages area */
+    background-color: rgba(255, 255, 255, 0.9); /* Light background for better visibility */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.input-container {
+    display: flex;
+    align-items: center; /* Center items vertically */
+    margin-top: 10px; /* Space above the input container */
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background for input area */
+    border-radius: 25px; /* Rounded corners for input area */
+    padding: 10px; /* Padding inside the input area */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Shadow for depth */
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    font-size: 2em; /* Increase icon size */
+    cursor: pointer;
+    margin-right: 10px; /* Space between buttons */
+    transition: transform 0.2s; /* Animate scaling on hover */
+}
+
+.icon-button:hover {
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    border-radius: 25px;
+    border: 2px solid #74ebd5; /* Border color */
+    outline: none;
+    transition: border-color 0.3s;
+    font-size: 1em;
+    background-color: #84bfc6; /* Light blue background for the input field */
+    color: #333; /* Text color */
+}
+
+/* Placeholder color */
+input[type="text"]::placeholder {
+    color: #a0d5e9; /* Placeholder text color */
+}
+
+input[type="text"]:focus {
+    border-color: #acb6e5; /* Focus border color */
+    background-color: #87f1b3; /* Change to white on focus */
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background-color: #74ebd5; /* Button color */
+    color: #5fb492;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #acb6e5; /* Button hover color */
+}
+
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 75%;
+    color: rgb(180, 210, 204);
+}
+
+.message.you {
+    background-color: #74ebd5; /* Color for user's messages */
+    align-self: flex-end; /* Align to the right */
+}
+
+.message.other {
+    background-color: #acb6e5; /* Color for other messages */
+    align-self: flex-start; /* Align to the left */
+}
